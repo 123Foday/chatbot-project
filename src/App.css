@@ -10,3 +10,8 @@ flex-direction: column;
 height: 40px;
 margin: -15px;
 }
+
+.welcome-message {
+color: rgb(120, 120, 120);
+text-align: center;
+}

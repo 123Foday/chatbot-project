@@ -79,7 +79,7 @@ async function sendMessage() {
 
   function clearMessage() {
     setChatMessages([]);
-    localStorage.setItem('chatMessages', JSON.stringify([]));
+    localStorage.setItem('messages', JSON.stringify([]));
   }
 
   return (
