@@ -1,0 +1,12 @@
+.app-container {
+max-width: 600px;
+margin: auto;
+height: 100vh;
+display: flex;
+flex-direction: column;
+}
+
+.loading-spinner {
+height: 40px;
+margin: -15px;
+}
