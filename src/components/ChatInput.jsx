@@ -1,16 +1,38 @@
 import dayjs from 'dayjs'
-import { useState } from 'react'
-import { Chatbot } from 'supersimpledev';
+import { useState, useRef, useEffect } from 'react'
+import { getAIResponse } from '../services/aiService';
+import { typeText } from '../utils/typingEffect';
 import LoadingSpinner from '../assets/loading-spinner.gif';
 import './ChatInput.css';
 
 export function ChatInput({chatMessages, setChatMessages}) {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const textareaRef = useRef(null);
+  const typingStopRef = useRef(null);
 
   function saveInputText(event) {
     setInputText(event.target.value);
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
   }
+
+  useEffect(() => {
+    // Reset textarea height when input is cleared
+    if (textareaRef.current && !inputText) {
+      textareaRef.current.style.height = 'auto';
+    }
+    
+    // Cleanup typing effect on unmount
+    return () => {
+      if (typingStopRef.current) {
+        typingStopRef.current();
+      }
+    };
+  }, [inputText]);
 
 async function sendMessage() {
 
@@ -18,23 +40,26 @@ async function sendMessage() {
       return;
     }
 
-    // Set isLoading to true at the start, and set it to
-    // false after everything is done.
-    setIsLoading(true);
-    
+    const userMessage = inputText.trim();
+    if (!userMessage) {
+      return;
+    }
 
+    // Set isLoading to true at the start
+    setIsLoading(true);
+
+    // Add user message immediately
+    const userMessageObj = {
+      message: userMessage,
+      sender: 'user',
+      id: crypto.randomUUID(),
+      time: dayjs().valueOf()
+    };
 
     const newChatMessages = [
       ...chatMessages,
-      {
-        message: inputText,
-        sender: 'user',
-        id: crypto.randomUUID(),
-        time: dayjs().valueOf()
-      },
-
-      // Another solution is to add the Loading... message
-      // to newChatMessages, but we have to remove it later.
+      userMessageObj,
+      // Add loading spinner message
       {
         message: <img
         className="loading-spinner" 
@@ -44,37 +69,68 @@ async function sendMessage() {
       }
     ];
 
-      // Set isLoading to false after everything is done.
-    setIsLoading(false);
-
     setInputText('');
-
     setChatMessages(newChatMessages);
 
-    const response = await Chatbot.getResponseAsync(inputText);
-    setChatMessages([
+    try {
+      // Get AI response with chat history for context
+      const response = await getAIResponse(userMessage, chatMessages);
       
-      // This makes a copy of newChatMessages, but without the
-    // last message in the array.
-    ...newChatMessages.slice(0, newChatMessages.length - 1),
-      {
-        message: response,
-        sender: 'robot',
-        time: dayjs().valueOf(),
-        id: crypto.randomUUID()
-      }
+      // Create a unique ID for the robot message
+      const robotMessageId = crypto.randomUUID();
       
-    ]);
+      // Replace loading spinner with empty message that will be typed
+      setChatMessages([
+        ...chatMessages,
+        userMessageObj,
+        {
+          message: '',
+          sender: 'robot',
+          time: dayjs().valueOf(),
+          id: robotMessageId,
+          isTyping: true
+        }
+      ]);
+
+      // Start typing effect
+      typingStopRef.current = typeText(response, (typedText) => {
+        setChatMessages(prevMessages => 
+          prevMessages.map(msg => 
+            msg.id === robotMessageId 
+              ? { ...msg, message: typedText, isTyping: typedText.length < response.length }
+              : msg
+          )
+        );
+      }, 15); // 15ms per character for smooth typing
+    } catch (error) {
+      // Handle errors gracefully
+      const errorMessage = error.message || 'Failed to get response. Please check your API key and try again.';
+      
+      setChatMessages([
+        ...chatMessages,
+        userMessageObj,
+        {
+          message: `Error: ${errorMessage}`,
+          sender: 'robot',
+          time: dayjs().valueOf(),
+          id: crypto.randomUUID(),
+          isError: true
+        }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
 
   }
 
   function handleKeyDown(event) {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
       sendMessage();
-    }
-    else if (event.key === 'Escape') {
+    } else if (event.key === 'Escape') {
       setInputText('');
     }
+    // Allow Shift+Enter for new lines
   }
 
   function clearMessage() {
@@ -84,21 +140,30 @@ async function sendMessage() {
 
   return (
     <div className="chat-input-container">
-      <input 
-        placeholder="Send a message to Chatbot" size="30" 
+      <textarea
+        ref={textareaRef}
+        placeholder="Type a message..." 
         onChange={saveInputText}
         value={inputText}
         onKeyDown={handleKeyDown}
         className="chat-input"
+        rows={1}
+        disabled={isLoading}
       />
       <button
         onClick={sendMessage}
         className="send-button"
-      >Send</button>
+        disabled={isLoading || !inputText.trim()}
+      >
+        {isLoading ? '...' : 'Send'}
+      </button>
       <button
         onClick={clearMessage}
         className="clear-button"
-      >Clear</button>
+        disabled={isLoading}
+      >
+        Clear
+      </button>
     </div>
   );
 }

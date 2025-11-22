@@ -3,8 +3,18 @@ import { ChatMessage } from './ChatMessage';
 import './ChatMessages.css';
 
 
-function ChatMessages({chatMessages}) {
+function ChatMessages({chatMessages, setChatMessages}) {
   const chatMessagesRef = useAutoScroll(chatMessages);
+
+  function handleEditMessage(messageId, newText) {
+    setChatMessages(prevMessages => 
+      prevMessages.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, message: newText, time: Date.now(), isEdited: true }
+          : msg
+      )
+    );
+  }
 
   return (
     <div className="chat-messages-container" 
@@ -16,6 +26,13 @@ function ChatMessages({chatMessages}) {
             message={chatMessage && chatMessage.message}
             sender={chatMessage && chatMessage.sender}
             time={chatMessage && chatMessage.time}
+            isError={chatMessage && chatMessage.isError}
+            id={chatMessage && chatMessage.id}
+            isEdited={chatMessage && chatMessage.isEdited}
+            isTyping={chatMessage && chatMessage.isTyping}
+            onEdit={handleEditMessage}
+            chatMessages={chatMessages}
+            setChatMessages={setChatMessages}
             key={key}
           />
         );
