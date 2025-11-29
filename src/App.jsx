@@ -26,15 +26,20 @@ function App() {
 
   return (
     <div className="app-container">
-
-      {chatMessages.length === 0 && (
-      <p className="welcome-message">Welcome to the chatbot project! Send a message using the textbox below
-      </p>)}
+      <header className="app-header">
+        <h1 className="header-title">Welcome to UNIMAK Chatbot</h1>
+      </header>
       
-      <ChatMessages  
-        chatMessages={chatMessages}
-        setChatMessages={setChatMessages}
-      />
+      {chatMessages.length === 0 ? (
+        <div className="welcome-message-container">
+          <p className="welcome-message">Send Message to <span className="cs-alpha">CS-ALPHA</span></p>
+        </div>
+      ) : (
+        <ChatMessages  
+          chatMessages={chatMessages}
+          setChatMessages={setChatMessages}
+        />
+      )}
     
       <ChatInput
         chatMessages={chatMessages}

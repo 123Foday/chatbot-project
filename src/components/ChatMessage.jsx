@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { useState, useRef, useEffect } from 'react';
 import RobotProfileImage from '../assets/robot.png';
-import UserProfileImage from '../assets/profile-1.jpg';
+import UserProfileImage from '../assets/unimak.jpg';
 import './ChatMessage.css';
 
 export function ChatMessage({ message, sender, time, isError, id, onEdit, chatMessages, setChatMessages, isEdited, isTyping }) {
