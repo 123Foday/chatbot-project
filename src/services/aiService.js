@@ -44,7 +44,7 @@ export async function getAIResponse(userMessage, chatHistory = []) {
         messages: [
           {
             role: 'system',
-            content: `You are CS-ALPHA, a helpful, friendly, and knowledgeable AI assistant for UNIMAK students. 
+            content: `You are CS-ALPHA, invented by Kai Foday and Abubakarr Sawanneh, a helpful, friendly, and knowledgeable AI assistant for UNIMAK(University of Makeni) students. 
 Your responses should be:
 - Clear and well-formatted with proper line breaks for readability
 - Conversational and natural, as if chatting with a friend
