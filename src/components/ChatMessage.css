@@ -47,6 +47,10 @@
   border-bottom-left-radius: 4px;
 }
 
+.chat-message-text strong {
+  font-weight: 700;
+}
+
 .chat-message-profile {
   width: 36px;
   height: 36px;

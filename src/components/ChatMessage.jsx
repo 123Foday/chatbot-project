@@ -44,19 +44,49 @@ export function ChatMessage({ message, sender, time, isError, id, onEdit, chatMe
     }
   }
 
-  // Format message text - preserve line breaks and basic formatting
+  // Format message text - preserve line breaks and parse markdown bold (**text**)
   function formatMessage(msg) {
     if (typeof msg !== 'string') return msg;
     if (msg === '') return null; // Return null for empty messages (will show cursor)
     
     // Split by newlines and create paragraphs
     const lines = msg.split('\n');
-    return lines.map((line, index) => (
-      <span key={index}>
-        {line || '\u00A0'}
-        {index < lines.length - 1 && <br />}
-      </span>
-    ));
+    return lines.map((line, lineIndex) => {
+      if (!line) return <span key={lineIndex}>{'\u00A0'}</span>;
+      
+      // Parse bold markdown (**text**)
+      const parts = [];
+      let lastIndex = 0;
+      const boldRegex = /\*\*(.+?)\*\*/g;
+      let match;
+      
+      while ((match = boldRegex.exec(line)) !== null) {
+        // Add text before the bold section
+        if (match.index > lastIndex) {
+          parts.push(line.substring(lastIndex, match.index));
+        }
+        // Add the bold text (without the asterisks)
+        parts.push(<strong key={`bold-${match.index}`}>{match[1]}</strong>);
+        lastIndex = match.index + match[0].length;
+      }
+      
+      // Add remaining text after the last bold section
+      if (lastIndex < line.length) {
+        parts.push(line.substring(lastIndex));
+      }
+      
+      // If no bold sections were found, return the line as-is
+      if (parts.length === 0) {
+        parts.push(line);
+      }
+      
+      return (
+        <span key={lineIndex}>
+          {parts}
+          {lineIndex < lines.length - 1 && <br />}
+        </span>
+      );
+    });
   }
 
   return (
