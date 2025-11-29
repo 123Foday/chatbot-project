@@ -2,10 +2,12 @@
   max-width: 800px;
   margin: auto;
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
   display: flex;
   flex-direction: column;
   background: #ffffff;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .app-header {
@@ -13,6 +15,7 @@
   padding: 20px 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .header-title {
@@ -49,6 +52,24 @@
   margin: 0;
   letter-spacing: -0.03em;
   user-select: none;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 16px 20px;
+  }
+  
+  .header-title {
+    font-size: 20px;
+  }
+  
+  .welcome-message {
+    font-size: 32px;
+  }
+  
+  .welcome-message-container {
+    padding: 16px;
+  }
 }
 
 .welcome-message .cs-alpha {
